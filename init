@@ -1,0 +1,45 @@
+#!/bin/bash
+
+get_available_port() {
+    local start_port=1024
+    local end_port=9999
+    local port
+
+    for port in $(seq $start_port $end_port); do
+        if ! lsof -iTCP:$port -sTCP:LISTEN &> /dev/null; then
+            echo $port
+            return 0
+        fi
+    done
+    echo "Nenhuma porta disponível encontrada entre $start_port e $end_port" >&2
+    return 1
+}
+
+USE=$1
+SS=$2
+IP=$3
+
+if [ -z "$USE" ] || [ -z "$SS" ] || [ -z "$IP" ]; then
+    echo "Erro: Certifique-se de passar as variáveis USE, SS e IP ao executar o script."
+    echo "Uso: USE=<usuario> SS=<senha> IP=<endereco>"
+    exit 1
+fi
+
+portI=$(get_available_port)
+if [ $? -ne 0 ]; then
+    echo "Erro: Não foi possível encontrar uma porta disponível."
+    exit 1
+fi
+
+echo "$port" >> port
+
+sudo docker commit $(docker ps -q -l) lhabacuc/sy > /dev/null
+sudo docker rm -f $(docker ps -aq) > /dev/null
+
+gnome-terminal --tab -- bash -c "ssh -R syf:80:localhost:${portI} serveo.net; exec bash"
+
+docker run -it --rm -e SSH_USER=$USE -e SSH_PASS=$SS -e IPS=$IP --cap-add SYS_ADMIN --device /dev/fuse -p ${portI}:8080 lhabacuc/sy
+
+sleep 2
+
+
